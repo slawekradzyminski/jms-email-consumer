@@ -1,0 +1,29 @@
+spring:
+  activemq:
+    in-memory: false
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+  mail:
+    host: localhost
+    port: 1025
+
+activemq:
+  destination: email
+
+email:
+  from: awesome@testing.com
+
+server:
+  port: 4002
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: always
+    include-exception: false
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
