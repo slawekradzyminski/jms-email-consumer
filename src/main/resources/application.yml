@@ -1,11 +1,11 @@
 spring:
   activemq:
     in-memory: false
-    broker-url: tcp://localhost:61616
+    broker-url: tcp://host.docker.internal:61616
     user: admin
     password: admin
   mail:
-    host: localhost
+    host: host.docker.internal
     port: 1025
 
 activemq:
