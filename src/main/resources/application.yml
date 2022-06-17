@@ -27,3 +27,8 @@ server:
       enabled: true
       force: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
