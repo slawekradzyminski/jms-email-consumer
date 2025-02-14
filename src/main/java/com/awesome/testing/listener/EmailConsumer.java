@@ -1,6 +1,6 @@
 package com.awesome.testing.listener;
 
-import com.awesome.testing.dto.EmailDTO;
+import com.awesome.testing.dto.email.EmailDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
@@ -21,7 +21,7 @@ public class EmailConsumer {
     private String from;
 
     @JmsListener(destination = "${activemq.destination}", containerFactory = "jmsFactory")
-    public void processToDo(EmailDTO email) {
+    public void processToDo(EmailDto email) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(email.getTo());
