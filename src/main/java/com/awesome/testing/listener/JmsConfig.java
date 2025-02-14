@@ -3,6 +3,8 @@ package com.awesome.testing.listener;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
+
+import com.awesome.testing.dto.email.EmailDto;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +13,6 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
-
-import com.awesome.testing.dto.EmailDTO;
 
 @Configuration
 @SuppressWarnings("unused")
@@ -33,8 +33,8 @@ public class JmsConfig {
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("_awesome_");
         converter.setTypeIdMappings(Map.of(
-            "EmailDTO", EmailDTO.class,
-            "com.awesome.testing.dto.email.EmailDTO", EmailDTO.class 
+            "EmailDTO", EmailDto.class,
+            "com.awesome.testing.dto.email.EmailDTO", EmailDto.class
         ));
         return converter;
     }
