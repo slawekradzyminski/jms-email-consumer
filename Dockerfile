@@ -5,6 +5,6 @@ RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:25-jre-noble
 WORKDIR /app
-COPY --from=build /app/target/consumer-1.0.0.jar consumer-1.0.0.jar
+COPY --from=build /app/target/consumer-1.0.0.jar app.jar
 EXPOSE 4002
-ENTRYPOINT ["java","-jar","/consumer-1.0.0.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
