@@ -2,7 +2,7 @@ package com.awesome.testing.listener;
 
 import java.util.Map;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 import com.awesome.testing.dto.email.EmailDto;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;

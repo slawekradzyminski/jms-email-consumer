@@ -1,3 +1,8 @@
+## Requirements
+
+- Java 25 (Temurin or compatible)
+- Docker (optional, for container builds)
+
 ## Direct run
 
 ```commandline
@@ -22,4 +27,3 @@ docker run -p4002:4002 slawekradzyminski/consumer:1.2
 ## Publish image
 
 [https://docs.docker.com/docker-hub/repos/](https://docs.docker.com/docker-hub/repos/)
-
