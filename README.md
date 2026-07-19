@@ -119,9 +119,9 @@ line on `master`. Stable versions can only be published by a Git tag. GitHub
 Actions needs repository secrets named `DOCKERHUB_USERNAME` and
 `DOCKERHUB_TOKEN`; GHCR uses `GITHUB_TOKEN`.
 
-To prepare the next release, replace `3.3.4-SNAPSHOT` with `3.3.4`, merge the
-verified commit to `master`, and tag that exact commit `v3.3.4`. Do not reuse or
-move an existing release tag.
+The current release source uses the exact version `3.3.4`; tag that verified
+commit as `v3.3.4`. After publishing, begin the next development line with
+`3.3.5-SNAPSHOT`. Do not reuse or move an existing release tag.
 
 `build-multiarch.sh` remains available only as an emergency local publishing
 fallback. Normal releases should use GitHub Actions so tests, source revision,

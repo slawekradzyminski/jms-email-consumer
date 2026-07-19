@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.awesome.testing</groupId>
 	<artifactId>consumer</artifactId>
-	<version>3.3.4-SNAPSHOT</version>
+	<version>3.3.4</version>
 	<name>consumer</name>
 	<description>Sample Awesome Testing consumer</description>
 	<properties>
