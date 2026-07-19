@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.awesome.testing</groupId>
 	<artifactId>consumer</artifactId>
-	<version>1.0.0</version>
+	<version>3.3.4</version>
 	<name>consumer</name>
 	<description>Sample Awesome Testing consumer</description>
 	<properties>
@@ -58,6 +58,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>consumer</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

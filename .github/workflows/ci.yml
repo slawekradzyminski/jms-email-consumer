@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.0
+
+      - name: Set up Java
+        uses: actions/setup-java@v5.6.0
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Verify application
+        run: ./mvnw --batch-mode verify
+
+      - name: Build container
+        run: docker build --tag consumer:ci .
+
+      - name: Verify container delivery contract
+        run: .github/scripts/verify-container.sh consumer:ci

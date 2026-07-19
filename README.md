@@ -32,11 +32,11 @@ Default values:
 Use this when ActiveMQ and Mailhog are exposed on your machine.
 
 ```bash
-./mvnw clean package spring-boot:repackage
+./mvnw clean package
 SPRING_ACTIVEMQ_BROKER_URL=tcp://localhost:61616 \
 SPRING_MAIL_HOST=localhost \
 SPRING_MAIL_PORT=1025 \
-java -jar target/consumer-1.0.0.jar
+java -jar target/consumer.jar
 ```
 
 If you use different credentials or destination names, override the remaining variables as needed.
@@ -46,7 +46,7 @@ If you use different credentials or destination names, override the remaining va
 No extra env vars are required when the app runs in a Compose network where `activemq` and `mailhog` resolve by service name.
 
 ```bash
-./mvnw clean package spring-boot:repackage
+./mvnw clean package
 docker build --tag=consumer:latest .
 docker run -p4002:4002 consumer:latest
 ```
@@ -74,7 +74,7 @@ docker run \
   -e SPRING_ACTIVEMQ_BROKER_URL=tcp://activemq:61616 \
   -e SPRING_MAIL_HOST=mailhog \
   -e SPRING_MAIL_PORT=1025 \
-  slawekradzyminski/consumer:3.3.1
+  slawekradzyminski/consumer:3.3.3
 ```
 
 Externalized example:
@@ -89,13 +89,40 @@ docker run \
   -e SPRING_MAIL_PORT=587 \
   -e ACTIVEMQ_DESTINATION=email \
   -e EMAIL_FROM=no-reply@example.com \
-  slawekradzyminski/consumer:3.3.1
+  slawekradzyminski/consumer:3.3.3
 ```
 
-## Publish image
+## Verification and releases
 
-Use the multi-arch helper:
+Pull requests and pushes to `master` run the Maven test suite, build the final
+container, and verify an email across the complete Artemis -> consumer -> Mailpit
+path. Run the same checks locally with:
 
 ```bash
-./build-multiarch.sh 3.3.1
+./mvnw --batch-mode verify
+docker build --tag consumer:ci .
+.github/scripts/verify-container.sh consumer:ci
 ```
+
+Container publishing is owned by `.github/workflows/publish-image.yml`. A release
+tag such as `v3.3.4` is accepted only when `pom.xml` contains the exact non-snapshot
+version `3.3.4`. The workflow publishes one `linux/amd64` and `linux/arm64`
+manifest to both:
+
+- `ghcr.io/slawekradzyminski/jms-email-consumer`
+- `slawekradzyminski/consumer`
+
+It also publishes a commit-SHA tag, SBOM, provenance, and OCI metadata. A manual
+run requires a semantic prerelease such as `3.3.4-rc.1`, publishes that version
+and the SHA tag, and only accepts it from the matching `3.3.4-SNAPSHOT` Maven
+line on `master`. Stable versions can only be published by a Git tag. GitHub
+Actions needs repository secrets named `DOCKERHUB_USERNAME` and
+`DOCKERHUB_TOKEN`; GHCR uses `GITHUB_TOKEN`.
+
+The current release source uses the exact version `3.3.4`; tag that verified
+commit as `v3.3.4`. After publishing, begin the next development line with
+`3.3.5-SNAPSHOT`. Do not reuse or move an existing release tag.
+
+`build-multiarch.sh` remains available only as an emergency local publishing
+fallback. Normal releases should use GitHub Actions so tests, source revision,
+provenance, and the published manifest stay connected.

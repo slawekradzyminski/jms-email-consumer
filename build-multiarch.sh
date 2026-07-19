@@ -2,15 +2,28 @@
 
 set -euo pipefail
 
-if [ $# -lt 1 ]; then
+if [ $# -ne 1 ]; then
   echo "Usage: $0 <version>"
   exit 1
 fi
 
 VERSION="$1"
+PROJECT_VERSION="$(./mvnw --batch-mode -Dstyle.color=never help:evaluate \
+  -Dexpression=project.version -q -DforceStdout)"
+
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Version must use MAJOR.MINOR.PATCH: $VERSION" >&2
+  exit 1
+fi
+
+if [[ "$PROJECT_VERSION" == *-SNAPSHOT || "$PROJECT_VERSION" != "$VERSION" ]]; then
+  echo "pom.xml must contain the exact non-snapshot version $VERSION; found $PROJECT_VERSION" >&2
+  exit 1
+fi
 
 echo "Setting up Docker buildx..."
-docker buildx create --name mybuilder --use || true
+docker buildx create --name jms-email-consumer-release --use || \
+  docker buildx use jms-email-consumer-release
 docker buildx inspect --bootstrap
 
 echo "Building and pushing multi-architecture image..."
