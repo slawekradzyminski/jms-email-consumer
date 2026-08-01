@@ -36,7 +36,7 @@ docker run --detach --name "$broker" --network "$network" \
 docker run --detach --name "$mailpit" --network "$network" \
   --network-alias mailpit \
   --env MP_DISABLE_VERSION_CHECK=true \
-  axllent/mailpit:v1.30.0 >/dev/null
+  axllent/mailpit:v1.30.0@sha256:0059ef81e492a7192af3816281eed6859eb078bd7bdc58b76757c13e10e53a7d >/dev/null
 
 docker run --detach --name "$consumer" --network "$network" \
   --env SPRING_ACTIVEMQ_BROKER_URL=tcp://activemq:61616 \
