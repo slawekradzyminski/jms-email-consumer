@@ -31,7 +31,7 @@ docker run --detach --name "$broker" --network "$network" \
   --env ARTEMIS_PASSWORD=admin \
   --env ANONYMOUS_LOGIN=false \
   --env 'EXTRA_ARGS=--http-host 0.0.0.0 --relax-jolokia --no-autotune' \
-  apache/activemq-artemis:2.42.0 >/dev/null
+  apache/artemis:2.55.0@sha256:a192eee9c46e6352625ca9dbf0beebe4a34c363111c628bbb10c4aff1227341d >/dev/null
 
 docker run --detach --name "$mailpit" --network "$network" \
   --network-alias mailpit \
@@ -71,7 +71,8 @@ if [[ "$published" != true ]]; then
   exit 1
 fi
 
-docker run --rm --interactive --network "$network" python:3.13-alpine python - <<'PY'
+docker run --rm --interactive --network "$network" \
+  python:3.14.6-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92 python - <<'PY'
 import json
 import time
 import urllib.request
