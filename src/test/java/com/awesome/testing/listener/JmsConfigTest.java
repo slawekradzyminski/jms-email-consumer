@@ -59,4 +59,22 @@ class JmsConfigTest {
                 argThat(typeId -> typeId.equals("EmailDTO")
                         || typeId.equals("com.awesome.testing.dto.email.EmailDTO")));
     }
+
+    @Test
+    void shouldDeserializeTheLegacyProducerTypeIdentifier() throws Exception {
+        MessageConverter converter = config.jacksonJmsMessageConverter();
+        TextMessage textMessage = mock(TextMessage.class);
+        when(textMessage.getStringProperty("_awesome_")).thenReturn(
+                "com.awesome.testing.dto.email.EmailDTO");
+        when(textMessage.getText()).thenReturn(
+                "{\"to\":\"legacy@example.com\",\"subject\":\"Subject\",\"message\":\"Body\"}");
+
+        Object result = converter.fromMessage(textMessage);
+
+        assertThat(result).isInstanceOfSatisfying(EmailDto.class, email -> {
+            assertThat(email.getTo()).isEqualTo("legacy@example.com");
+            assertThat(email.getSubject()).isEqualTo("Subject");
+            assertThat(email.getMessage()).isEqualTo("Body");
+        });
+    }
 }
