@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk-jammy@sha256:f122992af75e61d87892f8a37c60f7cfa498b18748c1c9f8563da9a3b1893278 AS build
+FROM eclipse-temurin:25-jdk-jammy@sha256:e4f029273ed9e4444697df30bb6098dbe51477291598aebc54dd0b48d95d6ae7 AS build
 # OpenJDK CVE-2026-91403 mitigation; pinned artifact provenance is in security/java/.
 COPY security/java/blocked.certs ${JAVA_HOME}/lib/security/blocked.certs
 RUN echo "2596bb6dda83c66d96c5a252d7b2ae1f24cc1ae3f1890223b4f3591a8d52bf10  ${JAVA_HOME}/lib/security/blocked.certs" | sha256sum --check -
@@ -10,7 +10,7 @@ COPY src/ src/
 RUN --mount=type=cache,target=/root/.m2 \
     ./mvnw --batch-mode package -DskipTests
 
-FROM eclipse-temurin:25-jre-noble@sha256:fbcf915c585659b30eb766ada4d6d7cfc9ec1040bf521e95bf61b10a25af73db
+FROM eclipse-temurin:25-jre-noble@sha256:a98128a57de944a72bd31fbc79b898edd5a5864d3652071d5bbd2160ab7d7dce
 # OpenJDK CVE-2026-91403 mitigation; pinned artifact provenance is in security/java/.
 COPY security/java/blocked.certs ${JAVA_HOME}/lib/security/blocked.certs
 RUN echo "2596bb6dda83c66d96c5a252d7b2ae1f24cc1ae3f1890223b4f3591a8d52bf10  ${JAVA_HOME}/lib/security/blocked.certs" | sha256sum --check -
