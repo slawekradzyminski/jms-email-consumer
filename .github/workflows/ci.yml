@@ -31,8 +31,24 @@ jobs:
       - name: Verify application
         run: ./mvnw --batch-mode verify
 
-      - name: Build container
-        run: docker build --tag consumer:ci .
+      - name: Build JVM fallback container
+        run: docker build --file Dockerfile.jvm --tag consumer:jvm .
 
-      - name: Verify container delivery contract
-        run: .github/scripts/verify-container.sh consumer:ci
+      - name: Verify JVM container delivery contract
+        run: .github/scripts/verify-container.sh consumer:jvm
+
+  native:
+    # The published image is the GraalVM native executable (Dockerfile). Building it proves the AOT
+    # processing and native-image metadata are complete; the smoke test proves the OpenWire client,
+    # Jackson type-id conversion and SMTP delivery work in the binary, not only on the JVM.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Build native container
+        run: docker build --tag consumer:native .
+
+      - name: Smoke test native container (Artemis -> consumer -> Mailpit)
+        run: scripts/native-smoke.sh consumer:native

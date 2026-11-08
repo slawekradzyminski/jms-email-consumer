@@ -5,3 +5,4 @@ target
 *.iml
 README.md
 build-multiarch.sh
+scripts

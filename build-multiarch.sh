@@ -8,6 +8,9 @@ if [ $# -ne 1 ]; then
 fi
 
 VERSION="$1"
+# The default Dockerfile builds the GraalVM native executable; under QEMU the foreign architecture takes a
+# very long time. DOCKERFILE=Dockerfile.jvm publishes the JVM fallback image instead.
+DOCKERFILE="${DOCKERFILE:-Dockerfile}"
 PROJECT_VERSION="$(./mvnw --batch-mode -Dstyle.color=never help:evaluate \
   -Dexpression=project.version -q -DforceStdout)"
 
@@ -28,6 +31,7 @@ docker buildx inspect --bootstrap
 
 echo "Building and pushing multi-architecture image..."
 docker buildx build --platform linux/amd64,linux/arm64 \
+  --file "$DOCKERFILE" \
   -t slawekradzyminski/consumer:"$VERSION" \
   --push \
   .

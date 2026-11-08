@@ -8,6 +8,7 @@ import com.awesome.testing.dto.email.EmailDto;
 import org.springframework.boot.jms.autoconfigure.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
@@ -15,6 +16,7 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
 @Configuration
+@ImportRuntimeHints(EmailContractRuntimeHints.class)
 @SuppressWarnings("unused")
 public class JmsConfig {
 

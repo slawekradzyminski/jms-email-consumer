@@ -1,7 +1,8 @@
 ## Requirements
 
 - Java 25 (Temurin or compatible)
-- Docker (optional, for image builds or local Compose usage)
+- Docker (optional, for image builds or local Compose usage; the native image is built inside Docker, so a
+  local GraalVM installation is not required)
 
 ## Runtime contract
 
@@ -46,10 +47,12 @@ If you use different credentials or destination names, override the remaining va
 No extra env vars are required when the app runs in a Compose network where `activemq` and `mailhog` resolve by service name.
 
 ```bash
-./mvnw clean package
-docker build --tag=consumer:latest .
+docker build --tag=consumer:latest .            # GraalVM native executable (published image)
+docker build --file Dockerfile.jvm --tag=consumer:jvm .   # JVM fallback
 docker run -p4002:4002 consumer:latest
 ```
+
+Both Dockerfiles are multi-stage and compile the sources themselves; no local `./mvnw package` is needed.
 
 If you run the container outside the Compose network, pass explicit transport variables:
 
@@ -92,21 +95,68 @@ docker run \
   slawekradzyminski/consumer:3.3.3
 ```
 
+## Native image
+
+The published image is a GraalVM native executable built by `Dockerfile` with the `native` Maven profile
+(`./mvnw -Pnative -DskipTests package` inside `ghcr.io/graalvm/native-image-community:25`, statically linked
+except for glibc, running on `gcr.io/distroless/base-debian13`). `Dockerfile.jvm` keeps the previous Temurin
+JVM image as a fallback; the default `./mvnw` build is unchanged and still produces `target/consumer.jar`.
+
+Measured locally (arm64, Artemis 2.55.0, Mailpit 1.30.0, after delivering 1000 emails):
+
+| | Native | JVM (`-Xms192m -Xmx768m`) |
+| --- | --- | --- |
+| Spring startup | 0.29-0.38 s | 2.1-4.5 s |
+| Process RSS (`/proc/1/status` VmRSS) | 46-71 MB, peak 102 MB | ~280 MB |
+| Image (compressed / unpacked) | 47 MiB / 203 MB | 125 MiB / 512 MB |
+
+Run the native image with an explicit heap cap and a small container limit, for example
+`command: ["-Xmx64m"]` and `mem_limit: 160m`. `JAVA_TOOL_OPTIONS` is ignored by native executables, and the
+`blocked.certs` mount at `/opt/java/openjdk/lib/security/` has no effect: the certificate mitigation is applied to
+the builder JDK at image build time. GC pause, buffer-pool and JIT metrics are not exported by the native
+runtime, and `jvm_memory_max_bytes` reports `-1`.
+
+Reflection, proxy and resource metadata the binary needs:
+
+- `EmailContractRuntimeHints` (imported by `JmsConfig`) registers `EmailDto` and `EmailTemplate` for Jackson
+  binding and for `Class.forName` resolution of the producer's fully qualified `_awesome_` type id.
+- `src/main/resources/META-INF/native-image/com.awesome.testing/consumer-library-hints/reachability-metadata.json`
+  covers the ActiveMQ OpenWire client (transport and wire-format factories, every OpenWire marshaller version,
+  URI option setters), Spring JMS connection/session proxies and Angus Mail SMTP. It was curated from a GraalVM
+  tracing-agent run against a real broker; Spring AOT owns the `com.awesome.testing/consumer` directory and
+  overwrites files placed there.
+- `NativeImageHintsTest` guards both on the JVM, and `scripts/native-smoke.sh` proves them in the binary.
+
+Smoke-test any consumer image end to end (Artemis -> consumer -> Mailpit; requires Docker, curl and python3):
+
+```bash
+docker build --tag consumer:native .
+scripts/native-smoke.sh consumer:native
+```
+
+It publishes the contract fixture `src/test/resources/contracts/email-jms-contract.json`, a `GENERIC` message
+and an unknown template value, checks the rendered emails in Mailpit (the unknown template must arrive as a
+`GENERIC` email through `EmailTemplate.fromValue`), that no native metadata error is logged, and reports startup time, image size and memory.
+
 ## Verification and releases
 
-Pull requests and pushes to `master` run the Maven test suite, build the final
-container, and verify an email across the complete Artemis -> consumer -> Mailpit
-path. Run the same checks locally with:
+Pull requests and pushes to `master` run the Maven test suite, build both
+containers, and verify email delivery across the complete Artemis -> consumer ->
+Mailpit path for each. Run the same checks locally with:
 
 ```bash
 ./mvnw --batch-mode verify
-docker build --tag consumer:ci .
-.github/scripts/verify-container.sh consumer:ci
+docker build --file Dockerfile.jvm --tag consumer:jvm .
+.github/scripts/verify-container.sh consumer:jvm
+docker build --tag consumer:native .
+scripts/native-smoke.sh consumer:native
 ```
 
 Container publishing is owned by `.github/workflows/publish-image.yml`. A release
 tag such as `v3.3.6` is accepted only when `pom.xml` contains the exact non-snapshot
-version `3.3.6`. The workflow publishes one `linux/amd64` and `linux/arm64`
+version `3.3.6`. The workflow smoke-tests the native image, builds it
+on an `ubuntu-24.04` (amd64) and an `ubuntu-24.04-arm` (arm64) runner because
+native-image does not cross-compile, and publishes one `linux/amd64` and `linux/arm64`
 manifest to both:
 
 - `ghcr.io/slawekradzyminski/jms-email-consumer`
@@ -124,5 +174,6 @@ commit as `v3.3.6`. After publishing, begin the next development line with
 `3.3.6-SNAPSHOT`. Do not reuse or move an existing release tag.
 
 `build-multiarch.sh` remains available only as an emergency local publishing
-fallback. Normal releases should use GitHub Actions so tests, source revision,
+fallback; it emulates the foreign architecture, which is very slow for the native
+build, and `DOCKERFILE=Dockerfile.jvm` publishes the JVM image instead. Normal releases should use GitHub Actions so tests, source revision,
 provenance, and the published manifest stay connected.
