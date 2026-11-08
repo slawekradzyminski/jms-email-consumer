@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.awesome.testing.dto.email.EmailDto;
+import com.awesome.testing.dto.email.EmailTemplate;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
@@ -76,5 +77,34 @@ class JmsConfigTest {
             assertThat(email.getSubject()).isEqualTo("Subject");
             assertThat(email.getMessage()).isEqualTo("Body");
         });
+    }
+
+    @Test
+    void shouldDeliverEmailsWithTemplatesThisConsumerDoesNotKnowAsGeneric() throws Exception {
+        MessageConverter converter = config.jacksonJmsMessageConverter();
+        TextMessage textMessage = mock(TextMessage.class);
+        when(textMessage.getStringProperty("_awesome_")).thenReturn("com.awesome.testing.dto.email.EmailDto");
+        when(textMessage.getText()).thenReturn(
+                "{\"to\":\"buyer@example.com\",\"subject\":\"Order #7 has shipped\","
+                        + "\"message\":\"Tracking number: 1234567890\",\"template\":\"ORDER_SHIPPED\"}");
+
+        Object result = converter.fromMessage(textMessage);
+
+        assertThat(result).isInstanceOfSatisfying(EmailDto.class, email -> {
+            assertThat(email.getTemplate()).isEqualTo(EmailTemplate.GENERIC);
+            assertThat(new EmailTemplateRenderer().render(email))
+                    .isEqualTo(new EmailTemplateRenderer.EmailContent("Order #7 has shipped", "Tracking number: 1234567890"));
+        });
+    }
+
+    @Test
+    void shouldStillBindKnownTemplatesExactly() throws Exception {
+        MessageConverter converter = config.jacksonJmsMessageConverter();
+        TextMessage textMessage = mock(TextMessage.class);
+        when(textMessage.getStringProperty("_awesome_")).thenReturn("com.awesome.testing.dto.email.EmailDto");
+        when(textMessage.getText()).thenReturn("{\"to\":\"a@example.com\",\"template\":\"PASSWORD_RESET_CONFIRMED\"}");
+
+        assertThat(((EmailDto) converter.fromMessage(textMessage)).getTemplate())
+                .isEqualTo(EmailTemplate.PASSWORD_RESET_CONFIRMED);
     }
 }
