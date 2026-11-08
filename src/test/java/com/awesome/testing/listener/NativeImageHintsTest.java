@@ -54,6 +54,8 @@ class NativeImageHintsTest {
                 .onMethodInvocation(EmailDto.class, "setTemplate")).accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
                 .onMethodInvocation(EmailDto.class, "getProperties")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(EmailTemplate.class.getMethod("fromValue", String.class))).accepts(hints);
     }
 
     /** Spring AOT writes its generated metadata to com.awesome.testing/consumer and would overwrite a file there. */

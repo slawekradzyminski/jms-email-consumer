@@ -9,8 +9,9 @@
 #   1. the contract fixture src/test/resources/contracts/email-jms-contract.json
 #      (PASSWORD_RESET_REQUESTED, fully qualified type id)  -> rendered reset email
 #   2. a GENERIC message (short `EmailDTO` type id)          -> subject/body passed through
-#   3. an unknown template value                             -> rejected by Jackson, no email
-# followed by a GENERIC sentinel proving the listener still consumes after the rejection.
+#   3. an unknown template value                             -> EmailTemplate.fromValue (@JsonCreator) maps
+#                                                               it to GENERIC: delivered with its own subject/body
+# followed by a GENERIC sentinel proving the listener keeps consuming in order.
 # Reports startup time, image size and container memory (docker stats) at the end.
 # Requires docker, curl and python3 on the host.
 
@@ -103,10 +104,10 @@ contract_type_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1
 
 publish "$contract_payload" "$contract_type_id"
 publish '{"to":"generic@example.test","subject":"Native smoke generic","message":"Generic body from the smoke test","template":"GENERIC","properties":{}}' EmailDTO
-publish '{"to":"unknown-template@example.test","subject":"Native smoke unknown template","message":"Must not be delivered","template":"NOT_A_TEMPLATE","properties":{}}' EmailDTO
+publish '{"to":"unknown-template@example.test","subject":"Native smoke unknown template","message":"Unknown template delivered as GENERIC","template":"NOT_A_TEMPLATE","properties":{}}' EmailDTO
 publish '{"to":"sentinel@example.test","subject":"Native smoke sentinel","message":"Delivered after the rejected message","template":"GENERIC"}' EmailDTO
 
-# Mailpit assertions: rendered contract email, generic pass-through, sentinel, and no unknown-template email.
+# Mailpit assertions: rendered contract email, generic pass-through, unknown template as GENERIC, sentinel.
 python3 - "$mailpit_url" "$fixture" <<'PY'
 import json, sys, time, urllib.request
 
@@ -115,6 +116,7 @@ payload = json.load(open(fixture))["payload"]
 expected = {
     "Password reset requested": payload["to"],
     "Native smoke generic": "generic@example.test",
+    "Native smoke unknown template": "unknown-template@example.test",
     "Native smoke sentinel": "sentinel@example.test",
 }
 
@@ -149,10 +151,11 @@ generic = get("/api/v1/message/" + by_subject["Native smoke generic"]["ID"])["Te
 if "Generic body from the smoke test" not in generic:
     raise SystemExit(f"FAIL: generic body not passed through:\n{generic}")
 
-unexpected = [m["Subject"] for m in messages
-              if any(to.get("Address") == "unknown-template@example.test" for to in m.get("To", []))]
-if unexpected:
-    raise SystemExit(f"FAIL: unknown template was delivered: {unexpected}")
+unknown = get("/api/v1/message/" + by_subject["Native smoke unknown template"]["ID"])["Text"]
+if "Unknown template delivered as GENERIC" not in unknown:
+    raise SystemExit(f"FAIL: unknown template was not rendered as GENERIC:\n{unknown}")
+if len(messages) != len(expected):
+    raise SystemExit(f"FAIL: expected exactly {len(expected)} emails, got {[m['Subject'] for m in messages]}")
 
 print("Mailpit received:")
 for message in sorted(messages, key=lambda m: m["Created"]):
@@ -160,8 +163,11 @@ for message in sorted(messages, key=lambda m: m["Created"]):
 PY
 
 logs="$(docker logs "$consumer" 2>&1)"
-grep -q 'not one of the values accepted for Enum class' <<<"$logs" \
-  || fail "unknown template was not rejected by Jackson enum binding"
+grep -q 'Sent GENERIC email to unknown-template@example.test' <<<"$logs" \
+  || fail "unknown template was not sent as GENERIC"
+if grep -q 'ListenerExecutionFailedException' <<<"$logs"; then
+  fail "a listener invocation failed (unknown template must not be rejected or redelivered)"
+fi
 if grep -Eq 'MissingReflectionRegistration|MissingResourceRegistration|ClassNotFoundException|NoSuchMethodException|UnsupportedFeatureError' <<<"$logs"; then
   grep -E 'MissingReflectionRegistration|MissingResourceRegistration|ClassNotFoundException|NoSuchMethodException|UnsupportedFeatureError' <<<"$logs" | head -5 >&2
   fail "native-image metadata gap reported in consumer logs"

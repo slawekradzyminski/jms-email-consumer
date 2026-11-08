@@ -135,8 +135,8 @@ scripts/native-smoke.sh consumer:native
 ```
 
 It publishes the contract fixture `src/test/resources/contracts/email-jms-contract.json`, a `GENERIC` message
-and an unknown template value, checks the rendered emails in Mailpit, that the unknown template is rejected
-without a native metadata error, and reports startup time, image size and memory.
+and an unknown template value, checks the rendered emails in Mailpit (the unknown template must arrive as a
+`GENERIC` email through `EmailTemplate.fromValue`), that no native metadata error is logged, and reports startup time, image size and memory.
 
 ## Verification and releases
 
