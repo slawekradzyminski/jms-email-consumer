@@ -1,0 +1,382 @@
+{
+  "reflection": [
+    {
+      "type": "org.apache.activemq.transport.tcp.TcpTransportFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.transport.tcp.SslTransportFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.transport.nio.NIOTransportFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.transport.nio.NIOSSLTransportFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.transport.failover.FailoverTransportFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.openwire.OpenWireFormatFactory",
+      "allPublicMethods": true,
+      "allPublicConstructors": true
+    },
+    {
+      "type": "org.apache.activemq.openwire.OpenWireFormat",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.openwire.v9.MarshallerFactory",
+      "methods": [
+        {
+          "name": "createMarshallerMap",
+          "parameterTypes": [
+            "org.apache.activemq.openwire.OpenWireFormat"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.openwire.v10.MarshallerFactory",
+      "methods": [
+        {
+          "name": "createMarshallerMap",
+          "parameterTypes": [
+            "org.apache.activemq.openwire.OpenWireFormat"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.openwire.v11.MarshallerFactory",
+      "methods": [
+        {
+          "name": "createMarshallerMap",
+          "parameterTypes": [
+            "org.apache.activemq.openwire.OpenWireFormat"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.openwire.v12.MarshallerFactory",
+      "methods": [
+        {
+          "name": "createMarshallerMap",
+          "parameterTypes": [
+            "org.apache.activemq.openwire.OpenWireFormat"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.ActiveMQConnectionFactory",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.ActiveMQPrefetchPolicy",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.blob.BlobTransferPolicy",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.tcp.TcpTransport",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.tcp.SslTransport",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.failover.FailoverTransport",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.AbstractInactivityMonitor",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.InactivityMonitor",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.transport.WireFormatNegotiator",
+      "allPublicMethods": true
+    },
+    {
+      "type": "org.apache.activemq.RedeliveryPolicy",
+      "allPublicMethods": true,
+      "allDeclaredFields": true
+    },
+    {
+      "type": "org.apache.activemq.filter.DestinationMapEntry",
+      "fields": [
+        {
+          "name": "destination"
+        }
+      ]
+    },
+    {
+      "type": "org.apache.activemq.ActiveMQConnection"
+    },
+    {
+      "type": "org.apache.activemq.ActiveMQSession"
+    },
+    {
+      "type": "org.apache.activemq.transport.ResponseCorrelator"
+    },
+    {
+      "type": "org.apache.activemq.transport.TransportFilter"
+    },
+    {
+      "type": "org.apache.activemq.transport.TransportSupport"
+    },
+    {
+      "type": "org.apache.activemq.util.IntSequenceGenerator"
+    },
+    {
+      "type": "org.apache.activemq.util.LongSequenceGenerator"
+    },
+    {
+      "type": "org.apache.activemq.util.JMSExceptionSupport"
+    },
+    {
+      "type": "org.apache.activemq.util.ServiceSupport"
+    },
+    {
+      "type": "org.eclipse.angus.mail.smtp.SMTPTransport",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "jakarta.mail.Session",
+            "jakarta.mail.URLName"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.smtp.SMTPSSLTransport",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "jakarta.mail.Session",
+            "jakarta.mail.URLName"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.smtp.SMTPProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.smtp.SMTPSSLProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.util.MailStreamProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.activation.MailcapRegistryProviderImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.activation.MimeTypeRegistryProviderImpl",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.handlers.text_plain",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.handlers.text_html",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.handlers.text_xml",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.handlers.multipart_mixed",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.eclipse.angus.mail.handlers.message_rfc822",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "jakarta.mail.Provider"
+    },
+    {
+      "type": "jakarta.mail.Session"
+    },
+    {
+      "type": "jakarta.mail.internet.MimeMessage"
+    },
+    {
+      "type": "jakarta.activation.MimeType"
+    },
+    {
+      "type": {
+        "proxy": [
+          "jakarta.jms.Connection",
+          "jakarta.jms.QueueConnection",
+          "jakarta.jms.TopicConnection"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "org.springframework.jms.connection.SessionProxy",
+          "jakarta.jms.QueueSession",
+          "jakarta.jms.TopicSession"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "jakarta.jms.Session"
+        ]
+      }
+    }
+  ],
+  "resources": [
+    {
+      "glob": "META-INF/services/org/apache/activemq/transport/tcp"
+    },
+    {
+      "glob": "META-INF/services/org/apache/activemq/transport/ssl"
+    },
+    {
+      "glob": "META-INF/services/org/apache/activemq/transport/nio"
+    },
+    {
+      "glob": "META-INF/services/org/apache/activemq/transport/nio+ssl"
+    },
+    {
+      "glob": "META-INF/services/org/apache/activemq/transport/failover"
+    },
+    {
+      "glob": "META-INF/services/org/apache/activemq/wireformat/default"
+    },
+    {
+      "glob": "META-INF/jakarta.mailcap"
+    },
+    {
+      "glob": "META-INF/mailcap"
+    },
+    {
+      "glob": "META-INF/jakarta.mailcap.default"
+    },
+    {
+      "glob": "META-INF/jakarta.mimetypes.default"
+    },
+    {
+      "glob": "META-INF/javamail.default.providers"
+    },
+    {
+      "glob": "META-INF/jakarta.default.providers"
+    },
+    {
+      "glob": "META-INF/javamail.charset.map"
+    },
+    {
+      "glob": "META-INF/jakarta.charset.map"
+    },
+    {
+      "glob": "META-INF/javamail.default.address.map"
+    },
+    {
+      "glob": "META-INF/jakarta.default.address.map"
+    },
+    {
+      "glob": "org/springframework/mail/javamail/mime.types"
+    }
+  ]
+}

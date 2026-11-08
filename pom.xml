@@ -125,6 +125,43 @@
 	</build>
 
 	<profiles>
+		<!--
+			GraalVM native executable: ./mvnw -Pnative -DskipTests package produces target/consumer.
+			Spring Boot's parent "native" profile contributes process-aot and add-reachability-metadata;
+			this profile adds the native-image build itself. Requires a GraalVM JDK with native-image
+			(the Dockerfile builds inside ghcr.io/graalvm/native-image-community). The default JVM build
+			is unaffected when the profile is not active.
+		-->
+		<profile>
+			<id>native</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.graalvm.buildtools</groupId>
+						<artifactId>native-maven-plugin</artifactId>
+						<configuration>
+							<imageName>consumer</imageName>
+							<buildArgs>
+								<!-- Statically link everything except glibc so a distroless glibc base suffices. -->
+								<buildArg>--static-nolibc</buildArg>
+								<!-- Fail the build instead of producing a binary that falls back to a JVM. -->
+								<buildArg>--no-fallback</buildArg>
+								<buildArg>-H:+ReportExceptionStackTraces</buildArg>
+							</buildArgs>
+						</configuration>
+						<executions>
+							<execution>
+								<id>build-native</id>
+								<goals>
+									<goal>compile-no-fork</goal>
+								</goals>
+								<phase>package</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>mutation-testing</id>
 			<build>
@@ -145,11 +182,13 @@
 								<param>com.awesome.testing.listener.JmsConfig</param>
 								<param>com.awesome.testing.listener.EmailConsumer</param>
 								<param>com.awesome.testing.listener.EmailTemplateRenderer</param>
+								<param>com.awesome.testing.listener.EmailContractRuntimeHints</param>
 							</targetClasses>
 							<targetTests>
 								<param>com.awesome.testing.listener.JmsConfigTest</param>
 								<param>com.awesome.testing.listener.EmailConsumerTest</param>
 								<param>com.awesome.testing.listener.EmailTemplateRendererTest</param>
+								<param>com.awesome.testing.listener.NativeImageHintsTest</param>
 							</targetTests>
 							<threads>4</threads>
 							<timestampedReports>false</timestampedReports>
