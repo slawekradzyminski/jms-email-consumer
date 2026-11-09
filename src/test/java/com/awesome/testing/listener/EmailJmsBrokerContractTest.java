@@ -24,7 +24,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -64,9 +63,6 @@ class EmailJmsBrokerContractTest {
     @MockitoBean
     private JavaMailSender javaMailSender;
 
-    @MockitoSpyBean
-    private EmailTemplateRenderer templateRenderer;
-
     @DynamicPropertySource
     static void brokerProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.activemq.broker-url", ARTEMIS::getBrokerUrl);
@@ -85,22 +81,16 @@ class EmailJmsBrokerContractTest {
         ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(javaMailSender, timeout(15_000)).send(captor.capture());
         SimpleMailMessage mail = captor.getValue();
-        JsonNode properties = payload.get("properties");
+        EmailDto expected = expectedEmail(payload);
 
-        ArgumentCaptor<EmailDto> boundEmail = ArgumentCaptor.forClass(EmailDto.class);
-        verify(templateRenderer).render(boundEmail.capture());
-        assertThat(boundEmail.getValue())
-                .as("EmailDto bound by the listener from the producer payload")
-                .usingRecursiveComparison()
-                .isEqualTo(expectedEmail(payload));
-
-        assertThat(mail.getTo()).containsExactly(payload.get("to").asString());
+        assertThat(mail.getTo()).containsExactly(expected.getTo());
         assertThat(mail.getFrom()).isEqualTo("awesome@testing.com");
-        assertThat(mail.getSubject()).isEqualTo("Password reset requested");
+        assertThat(mail.getSubject())
+                .as("subject rendered by the backend is delivered unchanged")
+                .isEqualTo(expected.getSubject());
         assertThat(mail.getText())
-                .contains("Hi " + properties.get("username").asString() + ",")
-                .contains("within " + properties.get("expiresInMinutes").asString() + " minutes")
-                .contains(properties.get("resetLink").asString());
+                .as("body rendered by the backend is delivered unchanged")
+                .isEqualTo(expected.getMessage());
     }
 
     private static EmailDto expectedEmail(JsonNode payload) {
