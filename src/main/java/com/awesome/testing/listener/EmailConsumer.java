@@ -9,6 +9,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
+/**
+ * Delivers the emails the backend publishes. The backend renders every subject and body
+ * (the same text its local outbox shows); the template only travels as metadata for logging.
+ */
 @Component
 @Slf4j
 @SuppressWarnings("unused")
@@ -16,7 +20,6 @@ import org.springframework.stereotype.Component;
 public class EmailConsumer {
 
     private final JavaMailSender javaMailSender;
-    private final EmailTemplateRenderer templateRenderer;
 
     @Value("${email.from}")
     private String from;
@@ -26,9 +29,8 @@ public class EmailConsumer {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(email.getTo());
-        EmailTemplateRenderer.EmailContent content = templateRenderer.render(email);
-        message.setSubject(content.subject());
-        message.setText(content.body());
+        message.setSubject(email.getSubject());
+        message.setText(email.getMessage());
         javaMailSender.send(message);
         log.info("Sent {} email to {}", email.getTemplate(), email.getTo());
     }

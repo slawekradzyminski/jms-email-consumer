@@ -86,14 +86,14 @@ class JmsConfigTest {
         when(textMessage.getStringProperty("_awesome_")).thenReturn("com.awesome.testing.dto.email.EmailDto");
         when(textMessage.getText()).thenReturn(
                 "{\"to\":\"buyer@example.com\",\"subject\":\"Order #7 has shipped\","
-                        + "\"message\":\"Tracking number: 1234567890\",\"template\":\"ORDER_SHIPPED\"}");
+                        + "\"message\":\"Tracking number: 1234567890\",\"template\":\"SOME_FUTURE_TEMPLATE\"}");
 
         Object result = converter.fromMessage(textMessage);
 
         assertThat(result).isInstanceOfSatisfying(EmailDto.class, email -> {
             assertThat(email.getTemplate()).isEqualTo(EmailTemplate.GENERIC);
-            assertThat(new EmailTemplateRenderer().render(email))
-                    .isEqualTo(new EmailTemplateRenderer.EmailContent("Order #7 has shipped", "Tracking number: 1234567890"));
+            assertThat(email.getSubject()).isEqualTo("Order #7 has shipped");
+            assertThat(email.getMessage()).isEqualTo("Tracking number: 1234567890");
         });
     }
 

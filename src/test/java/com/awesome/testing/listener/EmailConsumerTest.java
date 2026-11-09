@@ -2,7 +2,6 @@ package com.awesome.testing.listener;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.awesome.testing.dto.email.EmailDto;
 import java.util.Map;
@@ -22,26 +21,23 @@ class EmailConsumerTest {
     @Mock
     private JavaMailSender javaMailSender;
 
-    @Mock
-    private EmailTemplateRenderer templateRenderer;
-
     private EmailConsumer emailConsumer;
 
     @BeforeEach
     void setUp() {
-        emailConsumer = new EmailConsumer(javaMailSender, templateRenderer);
+        emailConsumer = new EmailConsumer(javaMailSender);
         ReflectionTestUtils.setField(emailConsumer, "from", "noreply@test.com");
     }
 
     @Test
-    void shouldRenderTemplateAndSendEmail() {
+    void shouldSendTheSubjectAndBodyRenderedByTheBackend() {
         EmailDto dto = EmailDto.builder()
                 .to("user@example.com")
+                .subject("Subject")
+                .message("Body")
                 .template(com.awesome.testing.dto.email.EmailTemplate.PASSWORD_RESET_REQUESTED)
-                .properties(Map.of())
+                .properties(Map.of("resetLink", "https://example.test/reset"))
                 .build();
-        when(templateRenderer.render(dto))
-                .thenReturn(new EmailTemplateRenderer.EmailContent("Subject", "Body"));
 
         emailConsumer.processToDo(dto);
 

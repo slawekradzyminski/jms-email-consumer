@@ -7,7 +7,7 @@
 #
 # Publishes three messages with the producer's `_awesome_` type header:
 #   1. the contract fixture src/test/resources/contracts/email-jms-contract.json
-#      (PASSWORD_RESET_REQUESTED, fully qualified type id)  -> rendered reset email
+#      (PASSWORD_RESET_REQUESTED, fully qualified type id)  -> backend-rendered subject/body delivered unchanged
 #   2. a GENERIC message (short `EmailDTO` type id)          -> subject/body passed through
 #   3. an unknown template value                             -> EmailTemplate.fromValue (@JsonCreator) maps
 #                                                               it to GENERIC: delivered with its own subject/body
@@ -107,14 +107,14 @@ publish '{"to":"generic@example.test","subject":"Native smoke generic","message"
 publish '{"to":"unknown-template@example.test","subject":"Native smoke unknown template","message":"Unknown template delivered as GENERIC","template":"NOT_A_TEMPLATE","properties":{}}' EmailDTO
 publish '{"to":"sentinel@example.test","subject":"Native smoke sentinel","message":"Delivered after the rejected message","template":"GENERIC"}' EmailDTO
 
-# Mailpit assertions: rendered contract email, generic pass-through, unknown template as GENERIC, sentinel.
+# Mailpit assertions: contract email as rendered by the backend, generic pass-through, unknown template as GENERIC, sentinel.
 python3 - "$mailpit_url" "$fixture" <<'PY'
 import json, sys, time, urllib.request
 
 base, fixture = sys.argv[1], sys.argv[2]
 payload = json.load(open(fixture))["payload"]
 expected = {
-    "Password reset requested": payload["to"],
+    payload["subject"]: payload["to"],
     "Native smoke generic": "generic@example.test",
     "Native smoke unknown template": "unknown-template@example.test",
     "Native smoke sentinel": "sentinel@example.test",
@@ -142,11 +142,9 @@ for subject, recipient in expected.items():
     if sender != "awesome@testing.com":
         raise SystemExit(f"FAIL: {subject!r} sent from {sender}")
 
-reset = get("/api/v1/message/" + by_subject["Password reset requested"]["ID"])["Text"]
-props = payload["properties"]
-for fragment in (f"Hi {props['username']},", f"within {props['expiresInMinutes']} minutes", props["resetLink"]):
-    if fragment not in reset:
-        raise SystemExit(f"FAIL: rendered reset email lacks {fragment!r}:\n{reset}")
+contract = get("/api/v1/message/" + by_subject[payload["subject"]]["ID"])["Text"]
+if payload["message"] not in contract:
+    raise SystemExit(f"FAIL: contract email body was not delivered unchanged:\n{contract}")
 generic = get("/api/v1/message/" + by_subject["Native smoke generic"]["ID"])["Text"]
 if "Generic body from the smoke test" not in generic:
     raise SystemExit(f"FAIL: generic body not passed through:\n{generic}")

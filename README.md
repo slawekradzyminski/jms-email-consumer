@@ -4,6 +4,13 @@
 - Docker (optional, for image builds or local Compose usage; the native image is built inside Docker, so a
   local GraalVM installation is not required)
 
+## Email content
+
+The consumer delivers each email with the subject and body that `test-secure-backend` rendered. It does not
+render templates itself: the backend owns every customer email text, so the backend's local outbox (used when no
+broker runs) and the delivered mail always match. The `template` field is metadata for logging; unknown template
+names are bound as `GENERIC`.
+
 ## Runtime contract
 
 The consumer uses one configuration path across localhost runs, Docker/localstack, and server deployment. Transport endpoints are controlled by environment variables, with Docker-friendly defaults baked into `application.yml`.
@@ -135,7 +142,8 @@ scripts/native-smoke.sh consumer:native
 ```
 
 It publishes the contract fixture `src/test/resources/contracts/email-jms-contract.json`, a `GENERIC` message
-and an unknown template value, checks the rendered emails in Mailpit (the unknown template must arrive as a
+and an unknown template value, checks in Mailpit that each email arrives with the subject and body the producer
+rendered (the unknown template must arrive as a
 `GENERIC` email through `EmailTemplate.fromValue`), that no native metadata error is logged, and reports startup time, image size and memory.
 
 ## Verification and releases
