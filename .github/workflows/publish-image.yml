@@ -79,6 +79,15 @@ jobs:
       - name: Verify application
         run: ./mvnw --batch-mode verify
 
+  native-smoke:
+    # Runs in parallel with `verify` (as the native job does in ci.yml) so the unit tests are off the
+    # critical path; `build` still waits for both gates.
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
       - name: Build native verification container
         run: docker build --tag consumer:verification .
 
@@ -88,7 +97,7 @@ jobs:
   # native-image cannot cross-compile and is impractically slow under QEMU, so each platform is built
   # on a runner of its own architecture, pushed by digest, and merged into one manifest list below.
   build:
-    needs: verify
+    needs: [verify, native-smoke]
     strategy:
       fail-fast: true
       matrix:
